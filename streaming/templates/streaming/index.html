@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+{% load static %}
+{% csrf_token %}
+<html>
+<head>
+    <title>Live Cam</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<form>{% csrf_token %}</form>
+
+<main>
+  <div style="width:100%">
+    <div style="width:50%;float:left">
+      <img src='#' id='MainStreamPlayer'>
+      <img src='#' id='TrajectoryStreamPlayer'>
+      
+
+    </div>
+    <div id='heatmap' style="width:50%;float:right;background-color: red;" >
+      
+    asdf
+    </div>
+  </div>
+  
+  
+</main>
+
+<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js'></script>
+
+<script type="module">
+
+setInterval(function () {getRealData()}, 30);//request every x seconds
+setInterval(function () {getTrajectoryData()}, 30);//request every x seconds
+
+
+function getRealData() {
+    $.ajax({
+            url: "http://192.168.0.43:9031/api/v1/sendImage/getImage/",
+            type: "GET",
+
+            success: function (response) {
+              if(response != 'no_file'){
+                var newImage = new Image();
+                newImage.src = "http://192.168.0.43:9031/log_img/" + response
+                document.getElementById("MainStreamPlayer").src = newImage.src;
+              }
+              
+            }
+        })
+}
+
+function getTrajectoryData() {
+    $.ajax({
+            url: "http://192.168.0.43:9031/api/v1/sendTrajectory/getImage/",
+            type: "GET",
+
+            success: function (response) {
+              if(response != 'no_file'){
+                var newImage = new Image();
+                newImage.src = "http://192.168.0.43:9031/image_trajectory/" + response
+                document.getElementById("TrajectoryStreamPlayer").src = newImage.src;
+              }
+              
+            }
+        })
+}
+
+function getCookie(name) {
+		var cookieValue = null;
+		if (document.cookie && document.cookie != '') {
+			var cookies = document.cookie.split(';');
+			for (var i = 0; i < cookies.length; i++) {
+				var cookie = jQuery.trim(cookies[i]);
+				// Does this cookie string begin with the name we want?
+				if (cookie.substring(0, name.length + 1) == (name + '=')) {
+					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
+	
+	function csrfSafeMethod(method) {
+		// these HTTP methods do not require CSRF protection
+		return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+	}
+	var csrftoken = getCookie('csrftoken');
+        if (Hls.isSupported()) {
+          var video1 = document.getElementById('video');
+          var video2 = document.getElementById('video2');
+          var hls1 = new Hls();
+          var hls2 = new Hls();
+          // bind them together
+          hls1.attachMedia(video1);
+          hls2.attachMedia(video2);
+          hls1.on(Hls.Events.MEDIA_ATTACHED, function () {
+            console.log("video and hls.js are now bound together !");
+            // load variable from views.py
+            hls1.loadSource("http://192.168.0.43:9031/stream_1/female.m3u8");
+            hls1.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+              console.log("manifest loaded, found " + data.levels.length + " quality level");
+            });
+          });
+          hls2.on(Hls.Events.MEDIA_ATTACHED, function () {
+            console.log("video and hls.js are now bound together !");
+            // load variable from views.py
+            hls2.loadSource("http://192.168.0.43:9031/stream_1/female.m3u8");
+            hls2.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+              console.log("manifest loaded, found " + data.levels.length + " quality level");
+            });
+          });
+        }
+
+</script>
+</body>
+</html>

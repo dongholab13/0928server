@@ -1,0 +1,11 @@
+.DS_Store
+*.ts
+*.pyc
+__pycache__
+*~
+*.log
+myvenv
+*.mp4
+*.jpg
+db.sqlite3
+/static
